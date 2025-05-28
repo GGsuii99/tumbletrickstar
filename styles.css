@@ -1,18 +1,87 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tumbletrick Star</title>
-  <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-  <div id="searchContainer">
-    <h1>Search Movies & TV Shows</h1>
-    <input type="search" id="searchBox" placeholder="Search..." />
-    <div id="results"></div>
-  </div>
+body {
+  font-family: Arial, sans-serif;
+  padding: 40px 20px;
+  background: url('https://cdn.jsdelivr.net/gh/GGsuii99/tumbletrickstar@main/1.gif') center/cover no-repeat;
+  color: #eee;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+}
 
-  <script src="tumble.js"></script>
-</body>
-</html>
+#searchContainer {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+h1 {
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+#searchBox {
+  width: 100%;
+  max-width: 320px;
+  padding: 0.6rem;
+  font-size: 1.1rem;
+  border-radius: 6px;
+  border: none;
+  outline: none;
+}
+
+#results {
+  margin-top: 0.5rem;
+  width: 100%;
+  max-width: 320px;
+  max-height: 500px;
+  overflow-y: auto;
+  background: #222;
+  border-radius: 6px;
+  box-shadow: 0 0 10px #00aaff88;
+}
+
+.result-item {
+  display: flex;
+  align-items: center;
+  padding: 8px;
+  cursor: pointer;
+  border-bottom: 1px solid #333;
+  transition: background 0.2s;
+}
+
+.result-item:hover {
+  background: #00aaff44;
+}
+
+.result-item img {
+  width: 50px;
+  height: 75px;
+  object-fit: cover;
+  border-radius: 3px;
+  margin-right: 12px;
+}
+
+.result-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.result-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #eee;
+}
+
+.result-type {
+  font-size: 0.8rem;
+  color: #66ccff;
+  margin-top: 2px;
+}
+
+.no-results {
+  padding: 12px;
+  text-align: center;
+  color: #aaa;
+}
