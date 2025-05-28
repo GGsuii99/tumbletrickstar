@@ -7,25 +7,27 @@ const body = document.body;
 
 let debounceTimeout;
 let specialUnlock = false;
-let inputBuffer = '';
+let unlockBuffer = '';
 
 document.addEventListener('keydown', function (e) {
-  inputBuffer += e.key;
-  if (inputBuffer.length > 3) inputBuffer = inputBuffer.slice(-3);
+  if (specialUnlock) return;
 
-  if (inputBuffer === '123' && !specialUnlock) {
+  if (e.key === 'Enter' && unlockBuffer === '123') {
     specialUnlock = true;
+    unlockBuffer = '';
     body.style.background = '#121212';
     searchContainer.style.display = 'flex';
     searchBox.focus();
+  } else if (e.key.length === 1) {
+    unlockBuffer += e.key;
+    if (unlockBuffer.length > 3) unlockBuffer = unlockBuffer.slice(-3);
   }
 });
 
 searchBox.addEventListener('input', function () {
-  const query = this.value.trim();
-
   if (!specialUnlock) return;
 
+  const query = this.value.trim();
   if (debounceTimeout) clearTimeout(debounceTimeout);
 
   if (query.length < 2) {
