@@ -1,97 +1,105 @@
- const API_KEY = 'e01e2483d3f1206f0ac286e39a8b6188';
-  const IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w92';
+    const API_KEY = 'e01e2483d3f1206f0ac286e39a8b6188';
+    const IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w92';
+    const searchContainer = document.getElementById('searchContainer');
+    const searchBox = document.getElementById('searchBox');
+    const resultsDiv = document.getElementById('results');
+    const body = document.body;
 
-  const resultsDiv = document.getElementById('results');
-  let debounceTimeout;
-  let query = '';
+    let debounceTimeout;
+    let specialUnlock = false;
 
-  document.addEventListener('keydown', (event) => {
-    if (event.key.length === 1) { // Only detect single character keys
-      query += event.key;
-
-      if (query === '123') {
-        resultsDiv.style.display = 'block'; // Show results on typing "123"
-        query = ''; // Reset query after unlocking search
-      } else if (query.length > 3) {
-        debounceTimeout = setTimeout(() => {
-          searchAll(query);
-        }, 300);
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' && document.activeElement !== searchBox) {
+        const codeInput = prompt("Enter access code:");
+        if (codeInput === '123') {
+          specialUnlock = true;
+          body.style.background = '#121212';
+          searchContainer.style.display = 'flex';
+          searchBox.focus();
+        }
       }
-    } else if (event.key === 'Backspace') {
-      query = query.slice(0, -1); // Remove last character
-    }
-  });
+    });
 
-  async function searchAll(query) {
-    resultsDiv.innerHTML = '<div class="no-results">Searching...</div>';
+    searchBox.addEventListener('input', function () {
+      const query = this.value.trim();
 
-    try {
-      const movieUrl = `https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(query)}&page=1`;
-      const tvUrl = `https://api.themoviedb.org/3/search/tv?api_key=${API_KEY}&query=${encodeURIComponent(query)}&page=1`;
+      if (!specialUnlock) return;
 
-      const [movieRes, tvRes] = await Promise.all([fetch(movieUrl), fetch(tvUrl)]);
-      if (!movieRes.ok) throw new Error('Movie API error');
-      if (!tvRes.ok) throw new Error('TV API error');
+      if (debounceTimeout) clearTimeout(debounceTimeout);
 
-      const [movieData, tvData] = await Promise.all([movieRes.json(), tvRes.json()]);
-
-      const movies = movieData.results || [];
-      const tvShows = tvData.results || [];
-
-      if (movies.length === 0 && tvShows.length === 0) {
-        resultsDiv.innerHTML = '<div class="no-results">No results found.</div>';
+      if (query.length < 2) {
+        resultsDiv.innerHTML = '';
         return;
       }
 
-      resultsDiv.innerHTML = '';
+      debounceTimeout = setTimeout(() => {
+        searchAll(query);
+      }, 300);
+    });
 
-      function createItem(item, type) {
-        const div = document.createElement('div');
-        div.className = 'result-item';
+    async function searchAll(query) {
+      resultsDiv.innerHTML = '<div class="no-results">Searching...</div>';
 
-        const posterPath = item.poster_path ? IMAGE_BASE_URL + item.poster_path : '';
+      try {
+        const movieUrl = `https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(query)}`;
+        const tvUrl = `https://api.themoviedb.org/3/search/tv?api_key=${API_KEY}&query=${encodeURIComponent(query)}`;
 
-        const img = document.createElement('img');
-        img.src = posterPath || 'https://via.placeholder.com/50x75?text=No+Image';
-        img.alt = item.name || item.title;
+        const [movieRes, tvRes] = await Promise.all([fetch(movieUrl), fetch(tvUrl)]);
+        const [movieData, tvData] = await Promise.all([movieRes.json(), tvRes.json()]);
 
-        const info = document.createElement('div');
-        info.className = 'result-info';
+        const movies = movieData.results || [];
+        const tvShows = tvData.results || [];
 
-        const title = document.createElement('div');
-        title.className = 'result-title';
-        title.textContent = item.title || item.name;
+        if (movies.length === 0 && tvShows.length === 0) {
+          resultsDiv.innerHTML = '<div class="no-results">No results found.</div>';
+          return;
+        }
 
-        const typeLabel = document.createElement('div');
-        typeLabel.className = 'result-type';
-        typeLabel.textContent = type === 'movie' ? 'Movie' : 'TV Show';
+        resultsDiv.innerHTML = '';
 
-        info.appendChild(title);
-        info.appendChild(typeLabel);
+        function createItem(item, type) {
+          const div = document.createElement('div');
+          div.className = 'result-item';
 
-        div.appendChild(img);
-        div.appendChild(info);
+          const posterPath = item.poster_path ? IMAGE_BASE_URL + item.poster_path : '';
+          const img = document.createElement('img');
+          img.src = posterPath || 'https://via.placeholder.com/50x75?text=No+Image';
+          img.alt = item.title || item.name;
 
-        div.addEventListener('click', () => {
-          const tmdbId = item.id;
-          let name = (item.title || item.name).toLowerCase()
-            .replace(/[^a-z0-9\s-]/g, '')
-            .trim()
-            .replace(/\s+/g, '-');
+          const info = document.createElement('div');
+          info.className = 'result-info';
 
-          const redirectUrl = type === 'movie'
-            ? `https://iframe.pstream.org/media/tmdb-movie-${tmdbId}-${name}`
-            : `https://iframe.pstream.org/media/tmdb-tv-${tmdbId}-${name}`;
+          const title = document.createElement('div');
+          title.className = 'result-title';
+          title.textContent = item.title || item.name;
 
-          window.location.href = redirectUrl;
-        });
+          const typeLabel = document.createElement('div');
+          typeLabel.className = 'result-type';
+          typeLabel.textContent = type === 'movie' ? 'Movie' : 'TV Show';
 
-        return div;
+          info.appendChild(title);
+          info.appendChild(typeLabel);
+          div.appendChild(img);
+          div.appendChild(info);
+
+          div.addEventListener('click', () => {
+            const tmdbId = item.id;
+            const name = (item.title || item.name).toLowerCase()
+              .replace(/[^a-z0-9\s-]/g, '')
+              .trim()
+              .replace(/\s+/g, '-');
+
+            const url = `https://iframe.pstream.org/media/tmdb-${type}-${tmdbId}-${name}`;
+            window.location.href = url;
+          });
+
+          return div;
+        }
+
+        movies.forEach(m => resultsDiv.appendChild(createItem(m, 'movie')));
+        tvShows.forEach(t => resultsDiv.appendChild(createItem(t, 'tv')));
+
+      } catch (err) {
+        resultsDiv.innerHTML = `<div class="no-results">Error: ${err.message}</div>`;
       }
-
-      movies.forEach(m => resultsDiv.appendChild(createItem(m, 'movie')));
-      tvShows.forEach(t => resultsDiv.appendChild(createItem(t, 'tv')));
-    } catch (err) {
-      resultsDiv.innerHTML = `<div class="no-results">Error: ${err.message}</div>`;
     }
-  }
