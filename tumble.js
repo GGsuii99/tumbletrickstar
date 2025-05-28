@@ -1,5 +1,6 @@
 const API_KEY = 'e01e2483d3f1206f0ac286e39a8b6188';
 const IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w92';
+
 const searchContainer = document.getElementById('searchContainer');
 const searchBox = document.getElementById('searchBox');
 const resultsDiv = document.getElementById('results');
@@ -9,27 +10,33 @@ let debounceTimeout;
 let specialUnlock = false;
 let unlockBuffer = '';
 
-document.addEventListener('keydown', function (e) {
+document.addEventListener('keydown', (e) => {
   if (specialUnlock) return;
 
   if (e.key === 'Enter' && unlockBuffer === '123') {
     specialUnlock = true;
     unlockBuffer = '';
-    // Remove the background GIF by changing background to a solid color
+
+    // Hide gif background, show solid color
     body.style.background = '#121212';
-    // Show the search container
+
+    // Show the search UI
     searchContainer.style.display = 'flex';
+
+    // Focus the input box
     searchBox.focus();
   } else if (e.key.length === 1) {
     unlockBuffer += e.key;
-    if (unlockBuffer.length > 3) unlockBuffer = unlockBuffer.slice(-3);
+    if (unlockBuffer.length > 3) {
+      unlockBuffer = unlockBuffer.slice(-3);
+    }
   }
 });
 
-searchBox.addEventListener('input', function () {
-  const query = this.value.trim();
-
+searchBox.addEventListener('input', () => {
   if (!specialUnlock) return;
+
+  const query = searchBox.value.trim();
 
   if (debounceTimeout) clearTimeout(debounceTimeout);
 
@@ -104,7 +111,6 @@ async function searchAll(query) {
 
     movies.forEach(m => resultsDiv.appendChild(createItem(m, 'movie')));
     tvShows.forEach(t => resultsDiv.appendChild(createItem(t, 'tv')));
-
   } catch (err) {
     resultsDiv.innerHTML = `<div class="no-results">Error: ${err.message}</div>`;
   }
