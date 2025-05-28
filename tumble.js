@@ -15,7 +15,9 @@ document.addEventListener('keydown', function (e) {
   if (e.key === 'Enter' && unlockBuffer === '123') {
     specialUnlock = true;
     unlockBuffer = '';
+    // Remove the background GIF by changing background to a solid color
     body.style.background = '#121212';
+    // Show the search container
     searchContainer.style.display = 'flex';
     searchBox.focus();
   } else if (e.key.length === 1) {
@@ -25,9 +27,10 @@ document.addEventListener('keydown', function (e) {
 });
 
 searchBox.addEventListener('input', function () {
+  const query = this.value.trim();
+
   if (!specialUnlock) return;
 
-  const query = this.value.trim();
   if (debounceTimeout) clearTimeout(debounceTimeout);
 
   if (query.length < 2) {
